@@ -1,45 +1,71 @@
 import streamlit as st
+from streamlit_mic_recorder import mic_recorder
 import speech_recognition as sr
 from deep_translator import GoogleTranslator
+import tempfile
 
-st.set_page_config(page_title="Multilingual Speech Recognition")
+st.set_page_config(page_title="Multilingual Speech Recognition", page_icon="🎤")
 
 st.title("🎤 Multilingual Speech Recognition and Translation System")
 
 st.write(
-    "An AI-powered application that converts speech from multiple languages into English."
+    "Speak in your selected language and translate it into English."
 )
 
-recognizer = sr.Recognizer()
+language_dict = {
+    "English": "en-IN",
+    "Kannada": "kn-IN",
+    "Hindi": "hi-IN",
+    "Tamil": "ta-IN",
+    "Telugu": "te-IN",
+    "Malayalam": "ml-IN"
+}
 
-if st.button("Start Recording"):
-    with sr.Microphone() as source:
-        st.write("🎙 Listening... Please speak.")
-        recognizer.adjust_for_ambient_noise(source)
+selected_language = st.selectbox(
+    "Select the language you will speak",
+    list(language_dict.keys())
+)
 
-        try:
-            audio = recognizer.listen(source, timeout=5)
+audio = mic_recorder(
+    start_prompt="🎙️ Start Recording",
+    stop_prompt="⏹️ Stop Recording",
+    key="recorder",
+)
 
-            text = recognizer.recognize_google(audio)
+if audio:
+    st.success("Recording completed!")
 
-            st.success("Speech Recognized Successfully!")
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
+        f.write(audio["bytes"])
+        audio_path = f.name
 
-            st.write("Recognized Text:")
-            st.write(text)
+    recognizer = sr.Recognizer()
 
-            translated = GoogleTranslator(
-                source="auto",
-                target="en"
-            ).translate(text)
+    try:
+        with sr.AudioFile(audio_path) as source:
+            audio_data = recognizer.record(source)
 
-            st.write("English Translation:")
-            st.success(translated)
+        text = recognizer.recognize_google(
+            audio_data,
+            language=language_dict[selected_language]
+        )
 
-        except sr.UnknownValueError:
-            st.error("Could not understand the speech.")
+        st.subheader("Recognized Text")
+        st.success(text)
 
-        except sr.RequestError:
-            st.error("Speech Recognition service is unavailable.")
+        translated = GoogleTranslator(
+            source="auto",
+            target="en"
+        ).translate(text)
 
-        except Exception as e:
-            st.error(f"Error: {e}")
+        st.subheader("English Translation")
+        st.success(translated)
+
+    except sr.UnknownValueError:
+        st.error("Could not understand your speech.")
+
+    except sr.RequestError:
+        st.error("Speech Recognition service is unavailable.")
+
+    except Exception as e:
+        st.error(f"Error: {e}")
