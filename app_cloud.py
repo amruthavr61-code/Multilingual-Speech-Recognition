@@ -41,7 +41,14 @@ if audio:
 
     transcriber = aai.Transcriber()
 
-    transcript = transcriber.transcribe(audio["bytes"])
+    config = aai.TranscriptionConfig(
+        language_code=language_dict[selected_language]
+    )
+
+    transcript = transcriber.transcribe(
+        audio["bytes"],
+        config=config
+    )
 
     if transcript.status == "error":
         st.error(transcript.error)
