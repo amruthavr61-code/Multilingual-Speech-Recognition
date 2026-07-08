@@ -1,4 +1,4 @@
 streamlit
 streamlit-mic-recorder
-SpeechRecognition
+assemblyai
 deep-translator
