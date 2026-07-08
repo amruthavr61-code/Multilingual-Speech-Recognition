@@ -2,7 +2,10 @@ import streamlit as st
 from streamlit_mic_recorder import mic_recorder
 import assemblyai as aai
 from deep_translator import GoogleTranslator
-aai.settings.api_key = st.secrets["ASSEMBLYAI_API_KEY"]
+
+# Enter your AssemblyAI API Key
+aai.settings.api_key = "ef3b0c7ecbb1433a996f05adf2e3ad11"
+
 st.set_page_config(
     page_title="Multilingual Speech Recognition",
     page_icon="🎤",
@@ -20,12 +23,11 @@ language_dict = {
     "Kannada": "kn",
     "Hindi": "hi",
     "Tamil": "ta",
-    "Telugu": "te",
     "Malayalam": "ml"
 }
 
 selected_language = st.selectbox(
-    "Select your language",
+    "Select your Language",
     list(language_dict.keys())
 )
 
@@ -60,7 +62,7 @@ if audio:
         st.success(text)
 
         translated = GoogleTranslator(
-            source="auto",
+            source=language_dict[selected_language],
             target="en"
         ).translate(text)
 
